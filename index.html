@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>성구 암기 테스트 (개역한글판)</title>
+    <title>예비 강의자 암송 성구 시험</title>
     <style>
         body {
             font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
@@ -113,7 +113,7 @@
 
     <h1>📖 성구 암기 테스트</h1>
     <div class="info-text">
-        <p>무작위로 3개의 성구가 출제됩니다.<br>
+        <p>무작위로 10개의 성구가 출제됩니다.<br>
         채점 기준: <span class="red">잘못 쓴 부분(빨간색/취소선)</span> / <span class="blue">빼먹은 부분(파란색)</span></p>
     </div>
 
@@ -229,7 +229,7 @@
         // 화면 렌더링
         window.onload = function() {
             const container = document.getElementById('test-container');
-            const selectedVerses = getRandomItems(bibleData, 3); // 3개 랜덤 추출
+            const selectedVerses = getRandomItems(bibleData, 10); // 10개 랜덤 추출
 
             selectedVerses.forEach((verse, index) => {
                 const card = document.createElement('div');
