@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예비 강의자 암송 성구 시험</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .info-text {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: bold;
+            color: #555;
+        }
+        .info-text span.red { color: red; text-decoration: line-through; }
+        .info-text span.blue { color: blue; }
+        
+        .question-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .question-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 15px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        .btn-check {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-check:hover {
+            background-color: #2980b9;
+        }
+        .btn-reload {
+            display: block;
+            width: 100%;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        .btn-reload:hover {
+            background-color: #219653;
+        }
+        .result-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f1f2f6;
+            border-left: 4px solid #34495e;
+            border-radius: 4px;
+            display: none;
+            white-space: pre-wrap;
+            word-break: keep-all;
+        }
+        .correct-answer-view {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #27ae60;
+            font-weight: bold;
+            display: none;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📖 예비 강의자 암송 성구 시험📖</h1>
+    <div class="info-text">
+        <p>무작위 순서로 성구가 출제됩니다.<br>
+        채점 기준: <span class="red">잘못 쓴 부분(빨간색/취소선)</span> / <span class="blue">빼먹은 부분(파란색)</span></p>
+    </div>
+
+    <div id="test-container"></div>
+
+    <button class="btn-reload" onclick="location.reload()">새로운 문제 랜덤 출제하기</button>
+
+    <script>
+        // 성구 데이터베이스 (개역한글판 완벽 반영)
+        const bibleData = [
+            {
+                title: "빌립보서 2:1~5",
+                text: "1 그러므로 그리스도 안에 무슨 권면이나 사랑에 무슨 위로나 성령의 무슨 교제나 긍휼이나 자비가 있거든\n2 마음을 같이 하여 같은 사랑을 가지고 뜻을 합하며 한 마음을 품어\n3 아무 일에든지 다툼이나 허영으로 하지 말고 오직 겸손한 마음으로 각각 자기보다 남을 낫게 여기고\n4 각각 자기 일을 돌아볼 뿐더러 또한 각각 다른 사람들의 일을 돌아보아 나의 기쁨을 충만케 하라\n5 너희 안에 이 마음을 품으라 곧 그리스도 예수의 마음이니"
+            },
+            {
+                title: "요한복음 13:34~35",
+                text: "34 새 계명을 너희에게 주노니 서로 사랑하라 내가 너희를 사랑한것 같이 너희도 서로 사랑하라\n35 너희가 서로 사랑하면 이로써 모든 사람이 너희가 내 제자인줄 알리라"
+            },
+            {
+                title: "이사야 50:4",
+                text: "4 주 여호와께서 학자의 혀를 내게 주사 나로 곤핍한 자를 말로 어떻게 도와 줄줄을 알게 하시고 아침마다 깨우치시되 나의 귀를 깨우치사 학자 같이 알아듣게 하시도다"
+            },
+            {
+                title: "예레미야 1:9~10",
+                text: "9 여호와께서 그 손을 내밀어 내 입에 대시며 내게 이르시되 보라 내가 내 말을 네 입에 두었노라\n10 보라 내가 오늘날 너를 열방 만국 위에 세우고 너로 뽑으며 파괴하며 파멸하며 넘어뜨리며 건설하며 심게 하였느니라"
+            },
+            {
+                title: "디모데전서 4:12~13",
+                text: "12 누구든지 네 연소함을 업신여기지 못하게 하고 오직 말과 행실과 사랑과 믿음과 정절에 대하여 믿는 자에게 본이 되어\n13 내가 이를 때까지 읽는 것과 권하는 것과 가르치는 것에 착념하라"
+            },
+            {
+                title: "야고보서 1:4~5",
+                text: "4 인내를 온전히 이루라 이는 너희로 온전하고 구비하여 조금도 부족함이 없게 하려 함이라\n5 너희 중에 누구든지 지혜가 부족하거든 모든 사람에게 후히 주시고 꾸짖지 아니하시는 하나님께 구하라 그리하면 주시리라"
+            },
+            {
+                title: "베드로전서 4:11",
+                text: "11 만일 누가 말하려면 하나님의 말씀을 하는것 같이 하고 누가 봉사하려면 하나님의 공급하시는 힘으로 하는것 같이 하라 이는 범사에 예수 그리스도로 말미암아 하나님이 영광을 받으시게 하려 함이니 그에게 영광과 권능이 세세에 무궁토록 있느니라 아멘"
+            },
+            {
+                title: "누가복음 17:10",
+                text: "10 이와 같이 너희도 명령 받은 것을 다 행한 후에 이르기를 우리는 무익한 종이라 우리의 하여야 할 일을 한것 뿐이라 할찌니라"
+            },
+            {
+                title: "이사야 40:31",
+                text: "31 오직 여호와를 앙망하는 자는 새 힘을 얻으리니 독수리의 날개치며 올라감 같을 것이요 달음박질하여도 곤비치 아니하겠고 걸어가도 피곤치 아니하리로다"
+            },
+            {
+                title: "디모데전서 4:15~16",
+                text: "15 이 모든 일에 전심전력하여 너의 진보를 모든 사람에게 나타나게 하라\n16 네가 네 자신과 가르침을 삼가 이 일을 계속하라 이것을 행함으로 네 자신과 네게 듣는 자를 구원하리라"
+            }
+        ];
+
+        // 랜덤하게 n개의 배열 요소를 뽑는 함수
+        function getRandomItems(arr, n) {
+            let shuffled = arr.slice(0), i = arr.length, min = i - n, temp, index;
+            while (i-- > min) {
+                index = Math.floor((i + 1) * Math.random());
+                temp = shuffled[index];
+                shuffled[index] = shuffled[i];
+                shuffled[i] = temp;
+            }
+            return shuffled.slice(min);
+        }
+
+        // DP를 이용한 간단한 문자 단위 비교 (LCS 알고리즘 응용)
+        function generateDiffHTML(expected, actual) {
+            const dp = Array(actual.length + 1).fill(null).map(() => Array(expected.length + 1).fill(0));
+            
+            for (let i = 1; i <= actual.length; i++) {
+                for (let j = 1; j <= expected.length; j++) {
+                    if (actual[i - 1] === expected[j - 1]) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                    } else {
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                    }
+                }
+            }
+
+            let i = actual.length;
+            let j = expected.length;
+            let res = [];
+
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && actual[i - 1] === expected[j - 1]) {
+                    res.push({ type: 'match', val: actual[i - 1] });
+                    i--; j--;
+                } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                    // 원본에는 있는데 입력에 빠진 부분 (파란색)
+                    res.push({ type: 'missing', val: expected[j - 1] });
+                    j--;
+                } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
+                    // 원본에 없는데 잘못 입력한 부분 (빨간색)
+                    res.push({ type: 'wrong', val: actual[i - 1] });
+                    i--;
+                }
+            }
+            
+            res.reverse();
+
+            let html = '';
+            for (let op of res) {
+                if (op.type === 'match') {
+                    html += op.val;
+                } else if (op.type === 'wrong') {
+                    html += `<span style="color:red; text-decoration:line-through;">${op.val}</span>`;
+                } else if (op.type === 'missing') {
+                    html += `<span style="color:blue; font-weight:bold;">${op.val}</span>`;
+                }
+            }
+            return html;
+        }
+
+        // 화면 렌더링
+        window.onload = function() {
+            const container = document.getElementById('test-container');
+            const selectedVerses = getRandomItems(bibleData, 1); // 10개 랜덤 추출
+
+            selectedVerses.forEach((verse, index) => {
+                const card = document.createElement('div');
+                card.className = 'question-card';
+
+                // 문제 번호와 타이틀
+                const title = document.createElement('div');
+                title.className = 'question-title';
+                title.innerText = `문제 ${index + 1}. ${verse.title}를 쓰시오`;
+                card.appendChild(title);
+
+                // 입력 텍스트 에리어
+                const textarea = document.createElement('textarea');
+                textarea.id = `input-${index}`;
+                textarea.placeholder = "여기에 성구를 입력하세요... (절 번호도 포함해서 적어주세요. 예: 1 그러므로...)";
+                card.appendChild(textarea);
+
+                // 정답 확인 버튼
+                const btn = document.createElement('button');
+                btn.className = 'btn-check';
+                btn.innerText = '정답 확인';
+                card.appendChild(btn);
+
+                // 결과 표시 박스 (틀린부분/빠진부분 표시)
+                const resultBox = document.createElement('div');
+                resultBox.id = `result-${index}`;
+                resultBox.className = 'result-box';
+                card.appendChild(resultBox);
+
+                // 원본 정답 보기
+                const answerView = document.createElement('div');
+                answerView.id = `answer-${index}`;
+                answerView.className = 'correct-answer-view';
+                answerView.innerText = `[정답 원본]\n${verse.text}`;
+                card.appendChild(answerView);
+
+                // 버튼 클릭 이벤트
+                btn.onclick = function() {
+                    const userInput = document.getElementById(`input-${index}`).value;
+                    const expectedText = verse.text;
+                    
+                    // 비교 로직 실행
+                    const diffHTML = generateDiffHTML(expectedText, userInput);
+                    
+                    resultBox.innerHTML = `<strong>[채점 결과]</strong><br><br>${diffHTML}`;
+                    resultBox.style.display = 'block';
+                    answerView.style.display = 'block';
+                };
+
+                container.appendChild(card);
+            });
+        };
+    </script>
+</body>
+</html>
